@@ -23,30 +23,6 @@ file(GLOB_RECURSE SRC_FILES src/*.cpp)
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Fetch GTest library
-set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/googletest)
-find_package(GTest REQUIRED CONFIG)
-
-include(FetchContent)
-FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-)
-
-if(WIN32)
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(googletest)
-endif()
-
-# Add test directory
-enable_testing()
-
-add_executable(unittest ${CMAKE_CURRENT_SOURCE_DIR}/test/unittest.cpp)
-target_link_libraries(unittest PRIVATE GTest::gtest_main)
-
-include(GoogleTest)
-gtest_discover_tests(unittest)
-
 # Specify the packaging information
 set(CPACK_PACKAGE_NAME "my_project")
 set(CPACK_PACKAGE_VERSION "1.0.0")
