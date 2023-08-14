@@ -11,7 +11,12 @@ This is a personal project that serves as an avenue to learn more about socket p
 I intend to make this project a stepping stone to ground my understanding of backend web transactions and 
 networking. The initial roadmap is to write an HTTP server which supports the following: 
 
-- [ ] Listen to incoming network connection
-- [ ] Accept incoming network connection and process them
-- [ ] Accepts request from the client
-- [ ] Returns response to the client
+- [x] Listen to incoming network connection
+- [x] Accept incoming network connection and process them
+- [x] Accepts request from the client
+- [x] Returns response to the client
+- [ ] File upload
+  - [ ] text and documents
+  - [ ] images
+  - [ ] video
+  - [ ] mp3
