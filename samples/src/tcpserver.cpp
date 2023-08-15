@@ -58,7 +58,7 @@ struct TcpServer {
 
   ~TcpServer() { close(m_server_socket); }
 
-  auto upload(std::string t_msg) const -> ssize_t {
+  auto upload(std::string_view t_msg) const -> ssize_t {
     return send(m_client_socket, t_msg.data(), t_msg.size(), 0);
   }
 
