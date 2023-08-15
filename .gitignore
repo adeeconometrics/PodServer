@@ -1,4 +1,3 @@
 build/
 lib/
-benchmark/bin/
-benchmark/build/
+samples/bin/
