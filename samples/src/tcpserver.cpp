@@ -1,44 +1,16 @@
 #include <arpa/inet.h>
 #include <array>
+#include <cstdio>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <ostream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <sys/socket.h>
 #include <unistd.h>
-
-struct TcpSocket {
-public:
-  TcpSocket() : m_socket(-1) {}
-
-  explicit TcpSocket(int socket) : m_socket(socket) {}
-
-  TcpSocket(TcpSocket &&other) noexcept : m_socket(other.m_socket) {
-    other.m_socket = -1;
-  }
-
-  auto operator=(TcpSocket &&other) noexcept -> TcpSocket & {
-    if (this != &other) {
-      close();
-      m_socket = other.m_socket;
-      other.m_socket = -1;
-    }
-    return *this;
-  }
-
-  ~TcpSocket() { close(); }
-
-  operator int() const { return m_socket; }
-
-  auto close() -> void {
-    if (m_socket != -1) {
-      // ::close(m_socket);
-      m_socket = -1;
-    }
-  }
-
-private:
-  int m_socket;
-};
+#include <vector>
 
 struct TcpServer {
   TcpServer(const std::size_t t_port = 8080, const int t_backlog = 3)
@@ -63,11 +35,54 @@ struct TcpServer {
   }
 
   auto download() -> const std::string {
-    ssize_t bytes_read = read(m_client_socket, m_buffer.data(), m_buffer.size());
-    if(bytes_read < 0){
+    ssize_t bytes_read =
+        read(m_client_socket, m_buffer.data(), m_buffer.size());
+    if (bytes_read < 0) {
       throw std::runtime_error("Error while reading data from client socket");
     }
     return std::string{m_buffer.data()};
+  }
+
+  auto upload_file(const std::vector<char>& f_data) const -> void {
+    ssize_t bytesSent =
+        send(m_client_socket, f_data.data(), f_data.size(), 0);
+    if (bytesSent < 0) {
+      throw std::runtime_error("Error sending file data");
+    }
+  }
+
+  // auto fetch_data() -> std::vector<char> {
+  //   ssize_t bytes_read =
+  //       recv(m_client_socket, m_buffer.data(), m_buffer.size(), 0);
+  //   if (bytes_read < 0) {
+  //     throw std::runtime_error("Error reading from client socket");
+  //   }
+  //   return std::vector<char>{m_buffer.data(), m_buffer.data() + bytes_read};
+  // }
+// test
+  auto download_file(const std::filesystem& f_path) -> void {
+    ssize_t bytes_read = recv(m_client_socket, m_buffer.data(), m_buffer.size(), 0);
+    if (bytes_read < 0) {
+      throw std::runtime_error("Failure during recieving the file type");
+    }
+
+    std::ostream file_stream(f_path, std::ios::binary);
+    if(!file_stream.is_open()){
+      throw std::runtime_error("failed to open for saving");
+    }
+
+    if (!file_stream) {
+      throw std::runtime_error("failed to open file for writing");
+    }
+
+    std::vector<char> fetched_data(1024);
+    ssize_t bytes{};
+    while(bytes = recv(m_client_socket, fetched_data.data(), fetched_data.size(),0) > 0){
+      file_stream.write(fetched_data.data(), bytes);
+    }
+
+    file_stream.close();
+    // return std::vector<char>{m_buffer.data(), m_buffer.data() + bytes_read};
   }
 
 private:
@@ -92,12 +107,12 @@ private:
     if (client_socket < 0) {
       throw std::runtime_error("Accept failed");
     }
-    m_client_socket = static_cast<int>(TcpSocket(client_socket));
+    m_client_socket = client_socket;
   }
 
 private:
-  static constexpr std::size_t buffer_size = 1024;
-  std::array<char, buffer_size> m_buffer{};
+  // static constexpr std::size_t buffer_size = 1024;
+  std::vector<char> m_buffer{};
   sockaddr_in m_server_addr;
 
   int m_client_socket{};
@@ -105,8 +120,25 @@ private:
 };
 
 auto main() -> int {
+  std::cout << "listening: .... ";
+  const auto parent_path = std::filesystem::current_path();
+  const auto filepath = parent_path / "tcpserver" / "PodServerLogo.png";
   TcpServer server{};
-  server.upload("Hello, Client!");
-  std::cout << "Client Mesage: " << server.download() << '\n';
+  // server.upload("Hello, Client!");
+  // std::cout << "Client Mesage: " << server.download() << '\n';
+  const std::vector<char> client_data = server.download_file();
+  std::ofstream file_stream(filepath, std::ios::binary);
+  
+  if(!file_stream.is_open()){
+    throw std::runtime_error("failed to open for saving");
+  }
+
+  if(!file_stream){
+    throw std::runtime_error("failed to open file for writing");
+  }
+
+  file_stream.write(client_data.data(), client_data.size());
+  file_stream.close();
+
   return 0;
 }
