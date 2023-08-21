@@ -73,8 +73,8 @@ private:
 };
 
 auto main() -> int {
-  const auto parent_path = std::filesystem::current_path();
-  const auto filepath = parent_path / "tcpclient" / "TestVideo.mp4";
+  const std::filesystem::path parent_path = std::filesystem::current_path();
+  const std::filesystem::path filepath = parent_path / "tcpclient" / "TestVideo.mp4";
 
   if (std::filesystem::exists(filepath)) {
     std::cout << "file exists and detected\n";

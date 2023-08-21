@@ -1,8 +1,11 @@
 #include "../include/TcpServer.hpp"
+// #include "../include/Utils.hpp"
 
 #include <arpa/inet.h>
 #include <array>
+#include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <sys/socket.h>
@@ -35,6 +38,38 @@ auto TcpServer::download() -> const std::string {
     throw std::runtime_error("Error while reading data from client socket");
   }
   return std::string{m_buffer.data()};
+}
+
+auto TcpServer::download_file(const std::filesystem::path& t_path) -> void {
+  ssize_t bytes_read =
+      recv(m_client_socket, m_buffer.data(), m_buffer_size(), 0);
+    
+  if (bytes_read < 0) {
+    throw std::runtime_error("Failure during receiving the file type");
+  }
+
+  std::ofstream file_stream(t_path, std::ios::binary);
+  if(!file_stream.is_open()){
+    throw std::runtime_error("failed to open for saving");
+  }
+
+  if(!file_stream){
+    throw std::runtime_error("failed to open for writing");
+  }
+
+  std::vector<char> fetched_data(buffer_size);
+  for (int bytes =
+           recv(m_client_socket, fetched_data.data(), fetched_data.size(), 0);
+       bytes > 0; bytes = recv(m_client_socket, fetched_data.data(),
+                               fetched_data.size(), 0)) {
+    file_stream.write(fetched_data.data(), bytes);
+  }
+
+  file_stream.close();
+}
+
+auto TcpServer::upload_file(const std::filesystem::path& t_path) -> void {
+  
 }
 
 auto TcpServer::setup_server(const int t_backlog) -> void {

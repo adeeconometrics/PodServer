@@ -51,14 +51,6 @@ struct TcpServer {
     }
   }
 
-  // auto fetch_data() -> std::vector<char> {
-  //   ssize_t bytes_read =
-  //       recv(m_client_socket, m_buffer.data(), m_buffer.size(), 0);
-  //   if (bytes_read < 0) {
-  //     throw std::runtime_error("Error reading from client socket");
-  //   }
-  //   return std::vector<char>{m_buffer.data(), m_buffer.data() + bytes_read};
-  // }
 // test
   auto download_file(const std::string& f_path) -> void {
     ssize_t bytes_read = recv(m_client_socket, m_buffer.data(), m_buffer.size(), 0);
@@ -84,7 +76,6 @@ struct TcpServer {
     }
 
     file_stream.close();
-    // return std::vector<char>{m_buffer.data(), m_buffer.data() + bytes_read};
   }
 
 private:
@@ -123,8 +114,8 @@ private:
 
 auto main() -> int {
   std::cout << "listening: .... ";
-  const auto parent_path = std::filesystem::current_path();
-  const auto filepath = parent_path / "tcpserver" / "SampleVideo.mp4";
+  const std::filesystem::path parent_path = std::filesystem::current_path();
+  const std::filesystem::path filepath = parent_path / "tcpserver" / "SampleVideo.mp4";
   TcpServer server{};
   // server.upload("Hello, Client!");
   // std::cout << "Client Mesage: " << server.download() << '\n';

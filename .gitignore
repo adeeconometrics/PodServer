@@ -1,4 +1,6 @@
 build/
 lib/
 samples/bin/
+samples/tcpserver/
+samples/tcpclient/
 docs/
