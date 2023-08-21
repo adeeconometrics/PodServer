@@ -3,10 +3,10 @@ CXX := g++
 CXXFLAGS := -Wall -Wextra -std=c++11
 
 # Directories
-SRC_DIR := ./src
-INCLUDE_DIR := ./include
-BUILD_DIR := ./build
-BIN_DIR := ./bin
+SRC_DIR := src
+INCLUDE_DIR := include
+BUILD_DIR := build
+BIN_DIR := bin
 
 # Find all .cpp files in the source directory
 SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
@@ -18,6 +18,9 @@ OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC_FILES))
 MAIN_SRC_FILES := $(wildcard $(SRC_DIR)/*_main.cpp)
 BIN_FILES := $(patsubst $(SRC_DIR)/%_main.cpp,$(BIN_DIR)/%,$(notdir $(MAIN_SRC_FILES)))
 
+# Build all binaries
+all: $(BIN_FILES)
+
 # Rule for building object files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(BUILD_DIR)
@@ -27,9 +30,6 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 $(BIN_DIR)/%: $(BUILD_DIR)/%.o
 	@mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $< -o $@
-
-# Build all binaries
-all: $(BIN_FILES)
 
 # Clean the build directory
 clean:

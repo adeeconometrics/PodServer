@@ -29,6 +29,10 @@ TcpServer::TcpServer(const std::size_t t_port, const int t_backlog)
 TcpServer::~TcpServer() { close(m_server_socket); }
 
 // auto TcpServer::upload_file(const std::filesystem::path &t_path) -> void {
+//   if (std::filesystem::exists(t_path)){
+//     throw std::runtime_error("file path does not exist: " + static_cast<std::string>(t_path));
+//   }
+
 //   ssize_t bytesSent = send(m_client_socket, m_buffer.data(), m_buffer.size(), 0);
 //   if (bytesSent < 0) {
 //     throw std::runtime_error("Error sending file data");

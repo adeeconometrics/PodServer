@@ -8,7 +8,12 @@
 struct TcpServer {
 public:
   TcpServer(const std::size_t t_port = 8080, const int t_backlog = 5);
+  TcpServer(const TcpServer &) = default;
+  TcpServer(TcpServer &&) = default;
   ~TcpServer();
+
+  auto operator=(const TcpServer &) -> TcpServer & = default;
+  auto operator=(TcpServer &&) -> TcpServer & = default;
 
   auto download_file(const std::filesystem::path &t_path) -> void;
   // auto upload_file(const std::filesystem::path &t_path) -> void;

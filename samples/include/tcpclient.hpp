@@ -10,14 +10,19 @@
 
 struct TcpClient {
   TcpClient(const char *t_ip, const std::size_t t_port = 8080);
+  TcpClient(const TcpClient &) = default;
+  TcpClient(TcpClient &&) = default;
   ~TcpClient();
+
+  auto operator=(const TcpClient &) -> TcpClient & = default;
+  auto operator=(TcpClient &&) -> TcpClient & = default;
 
   auto upload_file(const std::filesystem::path &t_path) const -> ssize_t;
   // auto download_file(const std::filesystem::path &t_path,
   //                    std::string_view f_name) -> void;
 
 private:
-  std::vector<char> m_buffer;
+  // std::vector<char> m_buffer;
   sockaddr_in m_server_addr;
 
   int m_client_socket{};
