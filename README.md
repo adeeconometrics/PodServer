@@ -16,7 +16,7 @@ networking. The initial roadmap is to write an HTTP server which supports the fo
 - [x] Accepts request from the client
 - [x] Returns response to the client
 - [ ] File upload
-  - [ ] text and documents
-  - [ ] images
-  - [ ] video
+  - [x] text and documents
+  - [x] images
+  - [x] video
   - [ ] mp3
