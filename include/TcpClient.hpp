@@ -2,23 +2,27 @@
 #define __TCPCLIENT_H__
 
 #include <arpa/inet.h>
-#include <array>
+#include <filesystem>
 #include <string>
-#include <string_view>
 #include <sys/socket.h>
+#include <unistd.h>
+#include <vector>
 
 struct TcpClient {
-public:
-  TcpClient(const char *t_ip, const std::size_t t_port = 8080,
-            const int t_backlog = 3);
+  TcpClient(const char *t_ip, const std::size_t t_port = 8080);
+  TcpClient(const TcpClient &) = default;
+  TcpClient(TcpClient &&) = default;
   ~TcpClient();
 
-  auto upload(std::string_view t_msg) const -> ssize_t;
-  auto download() -> const std::string;
+  auto operator=(const TcpClient &) -> TcpClient & = default;
+  auto operator=(TcpClient &&) -> TcpClient & = default;
+
+  auto upload_file(const std::filesystem::path &t_path) const -> ssize_t;
+  auto download_file(const std::filesystem::path &t_path,
+                     const std::string& f_name) -> void;
 
 private:
-  static constexpr std::size_t buffer_size = 1024;
-  std::array<char, buffer_size> m_buffer{};
+  std::vector<char> m_buffer;
   sockaddr_in m_server_addr;
 
   int m_client_socket{};
