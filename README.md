@@ -7,16 +7,16 @@ Exploratory project for building HTTP Servers in Linux
 
 ## Motivation, Goals, and Disclaimers
 
-This is a personal project that serves as an avenue to learn more about socket programming in C++.
+This personal project serves as an avenue to learn more about socket programming in C++.
 I intend to make this project a stepping stone to ground my understanding of backend web transactions and 
 networking. The initial roadmap is to write an HTTP server which supports the following: 
 
 - [x] Listen to incoming network connection
-- [x] Accept incoming network connection and process them
+- [x] Accept incoming network connections and process them
 - [x] Accepts request from the client
 - [x] Returns response to the client
-- [ ] File upload
+- [x] File Upload
   - [x] text and documents
   - [x] images
   - [x] video
-  - [ ] mp3
+  - [x] mp3
