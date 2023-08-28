@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <vector>
+#include <array>
 
 TcpServer::TcpServer(const std::size_t t_port, const int t_backlog)
     : m_server_socket(socket(AF_INET, SOCK_STREAM, 0)) {
@@ -28,16 +29,32 @@ TcpServer::TcpServer(const std::size_t t_port, const int t_backlog)
 
 TcpServer::~TcpServer() { close(m_server_socket); }
 
-// auto TcpServer::upload_file(const std::filesystem::path &t_path) -> void {
-//   if (std::filesystem::exists(t_path)){
-//     throw std::runtime_error("file path does not exist: " + static_cast<std::string>(t_path));
-//   }
+auto TcpServer::upload_file(const std::filesystem::path &t_path) -> void {
 
-//   ssize_t bytesSent = send(m_client_socket, m_buffer.data(), m_buffer.size(), 0);
-//   if (bytesSent < 0) {
-//     throw std::runtime_error("Error sending file data");
-//   }
-// }
+  // read name and type from client
+  std::array<char, buffer_size> f_name;
+  ssize_t fname_bytes = recv(m_client_socket, f_name.data(), f_name.size(), 0);
+  if (fname_bytes <= 0) {
+    throw std::runtime_error("File name receive failed");
+  }
+
+  // if (std::filesystem::exists(t_path /
+  //                             static_cast<std::string>(f_name.data()))) {
+  //   throw std::runtime_error("file path does not exist: " +
+  //                            static_cast<std::string>(t_path));
+  // }
+
+  std::ifstream input_file(t_path / static_cast<std::string>(f_name.data()),std::ios::binary);
+  if (!input_file) {
+    throw std::runtime_error("Failed to open the file");
+  }
+
+  std::array<char, buffer_size> buffer;
+  ssize_t bytes_read{};
+  while ((bytes_read = input_file.read(buffer.data(), buffer.size()).gcount()) > 0) {
+    send(m_client_socket, buffer.data(), bytes_read, 0);
+  }
+}
 
 // test
 auto TcpServer::download_file(const std::filesystem::path &t_path) -> void {
@@ -57,7 +74,7 @@ auto TcpServer::download_file(const std::filesystem::path &t_path) -> void {
   }
 
   std::vector<char> fetched_data(buffer_size);
-  for (int bytes =
+  for (ssize_t bytes =
            recv(m_client_socket, fetched_data.data(), fetched_data.size(), 0);
        bytes > 0; bytes = recv(m_client_socket, fetched_data.data(),
                                fetched_data.size(), 0)) {

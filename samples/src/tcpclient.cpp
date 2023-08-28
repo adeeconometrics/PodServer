@@ -4,6 +4,8 @@
 #include <array>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
+#include <stdexcept>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -40,11 +42,21 @@ auto TcpClient::upload_file(const std::filesystem::path &f_path) const
   return send(m_client_socket, file_data.data(), file_size, 0);
 }
 
-// auto TcpClient::download_file(const std::filesystem::path &t_path,
-//                               std::string_view f_name) -> void {
-//   ssize_t bytes_read = read(m_client_socket, m_buffer.data(), m_buffer.size());
-//   if (bytes_read < 0) {
-//     throw std::runtime_error("Error reading from client socket");
-//   }
-//   // return std::vector<char>(m_buffer.data(), m_buffer.data() + bytes_read);
-// }
+auto TcpClient::download_file(const std::filesystem::path &t_path,
+                              const std::string &f_name) -> void {
+
+  send(m_client_socket, f_name.c_str(), f_name.size(), 0); // try string_view
+  std::ofstream output_file(t_path / f_name, std::ios::binary);
+  if (!output_file) {
+    throw std::runtime_error("Failed during opening the file");
+  }
+
+  std::array<char, 1024> buffer{};
+  ssize_t bytes_read {};
+  while ((bytes_read = recv(m_client_socket, buffer.data(), buffer.size(), 0)) > 0) {
+    output_file.write(buffer.data(), bytes_read);
+  }
+
+  std::cout << "should close: ... ";
+  output_file.close();
+}

@@ -16,7 +16,7 @@ public:
   auto operator=(TcpServer &&) -> TcpServer & = default;
 
   auto download_file(const std::filesystem::path &t_path) -> void;
-  // auto upload_file(const std::filesystem::path &t_path) -> void;
+  auto upload_file(const std::filesystem::path &t_path) -> void;
 
 private:
   auto setup_server(const int t_backlog) -> void;
