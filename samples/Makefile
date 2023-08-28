@@ -1,39 +1,41 @@
 # Compiler and flags
 CXX := g++
-CXXFLAGS := -Wall -Wextra -std=c++11
-
-# Directories
+CXXFLAGS := -Wall -Wextra -std=c++17
+BIN_DIR := bin
+BUILD_DIR := build
 SRC_DIR := src
 INCLUDE_DIR := include
-BUILD_DIR := build
-BIN_DIR := bin
 
-# Find all .cpp files in the source directory
-SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
+# Find all source files except *_main.cpp
+SRC_FILES := $(filter-out $(MAIN_FILES), $(wildcard $(SRC_DIR)/*.cpp))
+BUILD_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC_FILES))
 
-# Create corresponding .o file paths
-OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC_FILES))
+# Find all *_main.cpp files
+MAIN_FILES := $(wildcard $(SRC_DIR)/*_main.cpp)
+EXECUTABLES := $(patsubst $(SRC_DIR)/%_main.cpp,$(BIN_DIR)/%,$(notdir $(MAIN_FILES)))
 
-# Identify main source files and create corresponding binary file paths
-MAIN_SRC_FILES := $(wildcard $(SRC_DIR)/*_main.cpp)
-BIN_FILES := $(patsubst $(SRC_DIR)/%_main.cpp,$(BIN_DIR)/%,$(notdir $(MAIN_SRC_FILES)))
+# Include directories
+INC_FLAGS := -I$(INCLUDE_DIR)
 
-# Build all binaries
-all: $(BIN_FILES)
+# Rule to build object files
+$(BUILD_DIR)/%.o: $(SRC_FILES)
+	@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) $(INC_FLAGS) -c -o $@ $<
 
-# Rule for building object files
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
+# Rule to build executables from *_main.cpp files
+define compile_and_link_template
+$$(BIN_DIR)/$(notdir $(basename $1)): $$(BUILD_DIR)/$(notdir $(basename $1)).o $(BUILD_FILES)
+	$$(CXX) -o $$@ $(BUILD_FILES)
+endef
 
-# Rule for building binary files
-$(BIN_DIR)/%: $(BUILD_DIR)/%.o
-	@mkdir -p $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $< -o $@
+# Apply the template for each *_main.cpp file
+$(foreach MAIN_FILE,$(MAIN_FILES),$(eval $(call compile_and_link_template,$(MAIN_FILE))))
 
-# Clean the build directory
+# Default target: build all executables
+all: $(EXECUTABLES)
+
+# Clean up generated files
 clean:
-	rm -rf $(BUILD_DIR) $(BIN_DIR)
+	rm -rf $(BIN_DIR) $(BUILD_DIR)
 
-# Declare the `all` and `clean` targets as phony
 .PHONY: all clean
